@@ -8,14 +8,6 @@
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/Wastedyouth225/ecom-tech)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/Wastedyouth225/ecom-tech)
 
-## Содержание
-- [Технологии](#технологии)
-- [Начало работы](#начало-работы)
-- [Тестирование](#тестирование)
-- [Deploy и CI/CD](#deploy-и-ci/cd)
-- [Contributing](#contributing)
-- [To do](#to-do)
-- [Команда проекта](#команда-проекта)
 
 ## Технологии
 - [Go](https://go.dev/) (стандартная библиотека)
