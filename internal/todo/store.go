@@ -23,6 +23,7 @@ func NewStore() *Store {
 func (s *Store) Create(t Todo) Todo {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
 	t.ID = s.nextID
 	s.nextID++
 	s.todos[t.ID] = t
@@ -32,16 +33,18 @@ func (s *Store) Create(t Todo) Todo {
 func (s *Store) GetAll() []Todo {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	todos := make([]Todo, 0, len(s.todos))
+
+	result := make([]Todo, 0, len(s.todos))
 	for _, t := range s.todos {
-		todos = append(todos, t)
+		result = append(result, t)
 	}
-	return todos
+	return result
 }
 
 func (s *Store) GetByID(id int) (Todo, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
+
 	t, ok := s.todos[id]
 	if !ok {
 		return Todo{}, ErrNotFound
@@ -52,8 +55,8 @@ func (s *Store) GetByID(id int) (Todo, error) {
 func (s *Store) Update(id int, t Todo) (Todo, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	_, ok := s.todos[id]
-	if !ok {
+
+	if _, ok := s.todos[id]; !ok {
 		return Todo{}, ErrNotFound
 	}
 	t.ID = id
@@ -64,8 +67,8 @@ func (s *Store) Update(id int, t Todo) (Todo, error) {
 func (s *Store) Delete(id int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	_, ok := s.todos[id]
-	if !ok {
+
+	if _, ok := s.todos[id]; !ok {
 		return ErrNotFound
 	}
 	delete(s.todos, id)

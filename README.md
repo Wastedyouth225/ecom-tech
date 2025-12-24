@@ -70,12 +70,9 @@ curl -v -X DELETE http://localhost:8080/todos/1
 ## Разработка
 Требования:
 Go 1.25 или выше
-## Установка зависимостей
+## Запуск
 ```
 go mod tidy
-```
-## Запуск Development сервера
-```
 go run ./cmd/server
 ```
 ## Запуск в Docker
@@ -99,16 +96,19 @@ go test ./... -v
 ## Структура проекта
 ```
 ecom-tech/
-├── README.md  
-├── Dockerfile
+├── cmd/server/main.go
+├── internal/http/
+│   ├── handler.go
+│   ├── handler_test.go
+│   └── middleware.go
+├── internal/todo/
+│   ├── model.go
+│   ├── service.go
+│   ├── store.go
+│   └── todo_test.go
 ├── go.mod
 ├── go.sum
-├── cmd/server/main.go
-├── internal/http/handler.go
-├── internal/http/middleware.go
-├── internal/todo/model.go
-├── internal/todo/service.go
-├── internal/todo/store.go
-├── internal/todo/todo_test.go
+├── README.md
+└── Dockerfile
 ````
 

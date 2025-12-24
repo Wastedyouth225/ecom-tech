@@ -24,37 +24,47 @@ func (h *Handler) Router() http.Handler {
 	return mux
 }
 
-func (h *Handler) handleTodos(w http.ResponseWriter, r *http.Request) {
+func writeJSON(w http.ResponseWriter, status int, v interface{}) {
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(v)
+}
 
+func writeError(w http.ResponseWriter, status int, message string) {
+	writeJSON(w, status, map[string]string{"error": message})
+}
+
+func (h *Handler) handleTodos(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		todos := h.service.GetTodos()
-		json.NewEncoder(w).Encode(todos)
+		writeJSON(w, http.StatusOK, todos)
 	case http.MethodPost:
 		var t todo.Todo
 		if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			writeError(w, http.StatusBadRequest, "invalid JSON")
 			return
 		}
 		created, err := h.service.CreateTodo(t)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			writeError(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		json.NewEncoder(w).Encode(created)
+		writeJSON(w, http.StatusOK, created)
 	default:
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		writeError(w, http.StatusMethodNotAllowed, "method not allowed")
 	}
 }
 
 func (h *Handler) handleTodoByID(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	idStr := strings.TrimPrefix(r.URL.Path, "/todos/")
-	id, err := strconv.Atoi(idStr)
+	segments := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+	if len(segments) != 2 || segments[0] != "todos" {
+		writeError(w, http.StatusBadRequest, "invalid path")
+		return
+	}
+	id, err := strconv.Atoi(segments[1])
 	if err != nil {
-		http.Error(w, "invalid id", http.StatusBadRequest)
+		writeError(w, http.StatusBadRequest, "invalid id")
 		return
 	}
 
@@ -62,34 +72,34 @@ func (h *Handler) handleTodoByID(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		t, err := h.service.GetTodo(id)
 		if err != nil {
-			http.Error(w, "not found", http.StatusNotFound)
+			writeError(w, http.StatusNotFound, "not found")
 			return
 		}
-		json.NewEncoder(w).Encode(t)
+		writeJSON(w, http.StatusOK, t)
 	case http.MethodPut:
 		var t todo.Todo
 		if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			writeError(w, http.StatusBadRequest, "invalid JSON")
 			return
 		}
 		updated, err := h.service.UpdateTodo(id, t)
 		if err != nil {
 			if err == todo.ErrInvalidTitle {
-				http.Error(w, err.Error(), http.StatusBadRequest)
+				writeError(w, http.StatusBadRequest, err.Error())
 			} else {
-				http.Error(w, "not found", http.StatusNotFound)
+				writeError(w, http.StatusNotFound, "not found")
 			}
 			return
 		}
-		json.NewEncoder(w).Encode(updated)
+		writeJSON(w, http.StatusOK, updated)
 	case http.MethodDelete:
 		err := h.service.DeleteTodo(id)
 		if err != nil {
-			http.Error(w, "not found", http.StatusNotFound)
+			writeError(w, http.StatusNotFound, "not found")
 			return
 		}
 		w.WriteHeader(http.StatusNoContent)
 	default:
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		writeError(w, http.StatusMethodNotAllowed, "method not allowed")
 	}
 }

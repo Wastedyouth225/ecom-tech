@@ -14,7 +14,6 @@ func main() {
 	service := todo.NewService(store)
 	handler := todohttp.NewHandler(service)
 
-	// Применяем middleware для логирования
 	loggedHandler := todohttp.LoggingMiddleware(handler.Router())
 
 	srv := &stdhttp.Server{
