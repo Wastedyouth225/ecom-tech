@@ -1,0 +1,13 @@
+# Binaries
+/bin/
+/bin/*
+
+# Go modules
+/vendor/
+
+# IDE
+*.idea/
+*.vscode/
+
+# OS
+.DS_Store
