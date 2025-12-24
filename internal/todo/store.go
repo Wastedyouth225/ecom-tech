@@ -34,11 +34,11 @@ func (s *Store) GetAll() []Todo {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	result := make([]Todo, 0, len(s.todos))
+	todos := make([]Todo, 0, len(s.todos))
 	for _, t := range s.todos {
-		result = append(result, t)
+		todos = append(todos, t)
 	}
-	return result
+	return todos
 }
 
 func (s *Store) GetByID(id int) (Todo, error) {
@@ -56,9 +56,11 @@ func (s *Store) Update(id int, t Todo) (Todo, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if _, ok := s.todos[id]; !ok {
+	_, ok := s.todos[id]
+	if !ok {
 		return Todo{}, ErrNotFound
 	}
+
 	t.ID = id
 	s.todos[id] = t
 	return t, nil
@@ -68,9 +70,11 @@ func (s *Store) Delete(id int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if _, ok := s.todos[id]; !ok {
+	_, ok := s.todos[id]
+	if !ok {
 		return ErrNotFound
 	}
+
 	delete(s.todos, id)
 	return nil
 }
