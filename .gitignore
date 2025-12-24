@@ -1,13 +1,5 @@
-# Binaries
 /bin/
-/bin/*
-
-# Go modules
 /vendor/
-
-# IDE
+/*.exe
+*.DS_Store
 *.idea/
-*.vscode/
-
-# OS
-.DS_Store
