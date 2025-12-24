@@ -25,6 +25,8 @@ func (h *Handler) Router() http.Handler {
 }
 
 func (h *Handler) handleTodos(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	switch r.Method {
 	case http.MethodGet:
 		todos := h.service.GetTodos()
@@ -47,6 +49,8 @@ func (h *Handler) handleTodos(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) handleTodoByID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	idStr := strings.TrimPrefix(r.URL.Path, "/todos/")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
