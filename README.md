@@ -7,7 +7,7 @@
 [![Go](https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go&logoColor=white)](https://go.dev/)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/Wastedyouth225/ecom-tech)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/Wastedyouth225/ecom-tech)
-
+[![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white)](https://github.com/Wastedyouth225/ecom-tech/blob/main/Dockerfile)
 
 ## Технологии
 - [Go](https://go.dev/) (стандартная библиотека)
@@ -85,4 +85,20 @@ docker run -p 8080:8080 ecom-tech-todo
 ```
 go test ./... -v
 ```
+## Структура проекта
+```
+ecom-tech/
+├── README.md
+├── Dockerfile
+├── go.mod
+├── go.sum
+├── cmd/server/main.go
+├── internal/http/handler.go
+├── internal/http/middleware.go
+├── internal/todo/model.go
+├── internal/todo/service.go
+├── internal/todo/store.go
+├── internal/todo/todo_test.go
+└── test/
+````
 
