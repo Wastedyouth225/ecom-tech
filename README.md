@@ -1,81 +1,96 @@
+# Todo API для ecom.tech
 
-ecom-tech - Todo API на Go
+Простой и эффективный HTTP-сервер на Go, реализующий CRUD-операции для управления задачами (Todo list).  
+Данные хранятся в памяти, без внешних баз данных.  
+Проект выполнен в рамках тестового задания на стажировку — используется только стандартная библиотека Go.
 
-HTTP-сервер на Go для работы с Todo задачами. Все данные хранятся в памяти (без внешней базы данных).
+[![Go](https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go&logoColor=white)](https://go.dev/)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/Wastedyouth225/ecom-tech)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/Wastedyouth225/ecom-tech)
 
-Эндпоинты
-- POST /todos - создать новую задачу
-- GET /todos - получить список всех задач
-- GET /todos/{id} - получить задачу по ID
-- PUT /todos/{id} - обновить задачу по ID
-- DELETE /todos/{id} - удалить задачу по ID
+## Содержание
+- [Технологии](#технологии)
+- [Начало работы](#начало-работы)
+- [Тестирование](#тестирование)
+- [Deploy и CI/CD](#deploy-и-ci/cd)
+- [Contributing](#contributing)
+- [To do](#to-do)
+- [Команда проекта](#команда-проекта)
 
-Структура задачи
-- id - числовой, автоматически присваивается
-- title - строка, обязательное поле
-- description - строка
-- completed - bool, признак завершённости
+## Технологии
+- [Go](https://go.dev/) (стандартная библиотека)
+- net/http
+- encoding/json
+- sync (для thread-safe хранилища)
+- Docker (для контейнеризации)
 
-Валидация
-- title не может быть пустым при создании или обновлении
-- Ошибка валидации → 400 Bad Request
-- Если задача с указанным ID не найдена → 404 Not Found
+## Использование
 
-Технологии
-- Go 1.25.5
-- Стандартная библиотека
-- Docker
+Сервер предоставляет REST API для работы с задачами.
 
-Запуск
+### Эндпоинты
 
-Локально:
-git clone https://github.com/Wastedyouth225/ecom-tech.git
-cd ecom-tech
-go run ./cmd/server
-Сервер запускается на порту 8080.
+| Метод  | Путь             | Описание                           | Тело запроса (JSON)                                                                 |
+|--------|------------------|------------------------------------|-------------------------------------------------------------------------------------|
+| POST   | `/todos`         | Создать новую задачу               | `{ "title": string*, "description": string, "completed": bool }`                    |
+| GET    | `/todos`         | Получить список всех задач         | —                                                                                   |
+| GET    | `/todos/{id}`    | Получить задачу по ID              | —                                                                                   |
+| PUT    | `/todos/{id}`    | Обновить задачу по ID              | `{ "title": string*, "description": string, "completed": bool }`                    |
+| DELETE | `/todos/{id}`    | Удалить задачу по ID               | —                                                                                   |
 
-Через Docker:
-docker build -t ecom-tech .
-docker run -p 8080:8080 ecom-tech
+`*` — поле `title` обязательно и не может быть пустым.
 
-Unit-тесты
-Расположены в internal/todo/todo_test.go
-Запуск:
-go test ./... -v
-
-Примеры запросов
-
-Создание задачи:
-curl -X POST http://localhost:8080/todos -H "Content-Type: application/json" -d '{"title":"Test","description":"Demo"}'
-
-Получение всех задач:
+### Структура задачи
+```json
+{
+  "id": 1,
+  "title": "string",
+  "description": "string",
+  "completed": false
+}
+```
+## Тестирование
+Создать задачу
+```sh
+curl -X POST http://localhost:8080/todos \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Купить молоко","description":"2 литра"}'
+```
+## Получить все задачи
+```
 curl http://localhost:8080/todos
+```
+##  Обновить задачу
+```
+curl -X PUT http://localhost:8080/todos/1 \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Купить хлеб","completed":true}'
+```
+## Разработка
+Требования:
+Go 1.25 или выше
+## Установка зависимостей
+```
+go mod tidy
+```
+## Запуск Development сервера
+```
+go run ./cmd/server
+```
+## Запуск в Docker
+```
+docker build -t ecom-tech-todo .
+docker run -p 8080:8080 ecom-tech-todo
+```
+## Тестирование
+Проект покрыт unit-тестами, проверяющими:
 
-Получение задачи по ID:
-curl http://localhost:8080/todos/1
+- создание задач
+- валидацию
+- обновление и удаление
+- обработку ошибок (400, 404)
+- отсутствие дублирования IDЗапуск тестов:
+```
+go test ./... -v
+```
 
-Обновление задачи:
-curl -X PUT http://localhost:8080/todos/1 -H "Content-Type: application/json" -d '{"title":"Updated","description":"Updated","completed":true}'
-
-Удаление задачи:
-curl -X DELETE http://localhost:8080/todos/1
-
-Логирование
-Сервер выводит в консоль:
-Server started at :8080
-
-Структура проекта:
-
-ecom-tech/
-├── README.md
-├── Dockerfile
-├── go.mod
-├── go.sum
-├── cmd/server/main.go
-├── internal/http/handler.go
-├── internal/http/middleware.go
-├── internal/todo/model.go
-├── internal/todo/service.go
-├── internal/todo/store.go
-├── internal/todo/todo_test.go
-├── pkg/
