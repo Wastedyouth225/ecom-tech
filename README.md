@@ -23,7 +23,7 @@
 - net/http
 - encoding/json
 - sync (для thread-safe хранилища)
-- Docker 
+- Docker
 
 ## Использование
 
@@ -118,11 +118,9 @@ ecom-tech/
 │   ├── service.go        # сервисный слой, проверка бизнес-логики
 │   ├── store.go          # thread-safe хранилище (map + sync)
 │   └── todo_test.go      # unit-тесты для бизнес-логики
-├── go.mod
-├── go.sum
-├── Dockerfile
-└── README.md
-
+├── go.mod / go.sum       # Модули Go
+├── Dockerfile            # Docker образ
+└── README.md             # Документация
 ````
 
     
