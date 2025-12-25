@@ -9,6 +9,15 @@
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/Wastedyouth225/ecom-tech)
 [![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white)](https://github.com/Wastedyouth225/ecom-tech/blob/main/Dockerfile)
 
+## Содержание
+- [Технологии](#Технологии)
+- [Использование](#Использование)
+- [Эндпоинты](#Эндпоинты)
+- [Структура задачи](#Структура-задачи)
+- [Примеры использования](#Примеры-использования)
+- [Разработка](#Разработка)
+- [Структура проекта](#Структура-проекта)
+
 ## Технологии
 - [Go](https://go.dev/) (стандартная библиотека)
 - net/http
@@ -96,19 +105,24 @@ go test ./... -v
 ## Структура проекта
 ```
 ecom-tech/
-├── cmd/server/main.go
-├── internal/http/
-│   ├── handler.go
-│   ├── handler_test.go
-│   └── middleware.go
-├── internal/todo/
-│   ├── model.go
-│   ├── service.go
-│   ├── store.go
-│   └── todo_test.go
+├── cmd/server/           # точка входа приложения
+│   └── main.go           # запускает сервер, middleware и роутер
+├── api/                  # определение маршрутов
+│   └── routes.go         # все роуты ссылаются на обработчики
+├── internal/http/        # обработчики HTTP-запросов
+│   ├── handlers.go       # все методы CRUD для Todo
+│   ├── middleware.go     # middleware (логирование)
+│   └── handler_test.go   # unit-тесты для HTTP-обработчиков
+├── internal/todo/        # бизнес-логика и хранилище
+│   ├── model.go          # структура Todo, валидация
+│   ├── service.go        # сервисный слой, проверка бизнес-логики
+│   ├── store.go          # thread-safe хранилище (map + sync)
+│   └── todo_test.go      # unit-тесты для бизнес-логики
 ├── go.mod
 ├── go.sum
-├── README.md
-└── Dockerfile
+├── Dockerfile
+└── README.md
+
 ````
 
+    

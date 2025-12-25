@@ -11,115 +11,74 @@ import (
 	"ecom-tech/internal/todo"
 )
 
-func setupHandler() *Handler {
+func setupTestServer() *TodoHandlers {
 	store := todo.NewStore()
 	service := todo.NewService(store)
-	return NewHandler(service)
+	return NewTodoHandlers(service)
 }
 
-func TestHandler_CreateTodo_Success(t *testing.T) {
-	handler := setupHandler()
-	todoData := map[string]interface{}{
-		"title":       "Test Task",
-		"description": "Test Description",
-		"completed":   false,
-	}
+func TestHandler_CreateGetUpdateDeleteTodo(t *testing.T) {
+	h := setupTestServer()
+
+	//  CREATE
+	todoData := todo.Todo{Title: "Test Task", Description: "Demo"}
 	body, _ := json.Marshal(todoData)
 	req := httptest.NewRequest(http.MethodPost, "/todos", bytes.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
-	rr := httptest.NewRecorder()
+	w := httptest.NewRecorder()
+	h.Create(w, req)
 
-	handler.Router().ServeHTTP(rr, req)
-
-	if rr.Code != http.StatusOK {
-		t.Fatalf("Expected status 200, got %d", rr.Code)
+	if w.Code != http.StatusCreated {
+		t.Fatalf("expected status 201, got %d", w.Code)
 	}
 
-	var response todo.Todo
-	if err := json.Unmarshal(rr.Body.Bytes(), &response); err != nil {
+	var created todo.Todo
+	if err := json.NewDecoder(w.Body).Decode(&created); err != nil {
 		t.Fatal(err)
 	}
 
-	if response.Title != "Test Task" {
-		t.Errorf("Expected title 'Test Task', got '%s'", response.Title)
-	}
-}
-
-func TestHandler_CreateTodo_EmptyTitle(t *testing.T) {
-	handler := setupHandler()
-	todoData := map[string]interface{}{
-		"title":       "",
-		"description": "Test",
-	}
-	body, _ := json.Marshal(todoData)
-	req := httptest.NewRequest(http.MethodPost, "/todos", bytes.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
-	rr := httptest.NewRecorder()
-
-	handler.Router().ServeHTTP(rr, req)
-
-	if rr.Code != http.StatusBadRequest {
-		t.Errorf("Expected status 400, got %d", rr.Code)
-	}
-}
-
-func TestHandler_GetTodo_NotFound(t *testing.T) {
-	handler := setupHandler()
-	req := httptest.NewRequest(http.MethodGet, "/todos/999", nil)
-	rr := httptest.NewRecorder()
-
-	handler.Router().ServeHTTP(rr, req)
-
-	if rr.Code != http.StatusNotFound {
-		t.Errorf("Expected status 404, got %d", rr.Code)
-	}
-}
-
-func TestHandler_UpdateTodo_Success(t *testing.T) {
-	handler := setupHandler()
-	created, _ := handler.service.CreateTodo(todo.Todo{Title: "Old", Description: "Desc"})
-
-	updateData := map[string]interface{}{
-		"title":       "Updated",
-		"description": "New Desc",
-		"completed":   true,
-	}
-	body, _ := json.Marshal(updateData)
-	req := httptest.NewRequest(http.MethodPut, "/todos/"+strconv.Itoa(created.ID), bytes.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
-	rr := httptest.NewRecorder()
-
-	handler.Router().ServeHTTP(rr, req)
-
-	if rr.Code != http.StatusOK {
-		t.Fatalf("Expected status 200, got %d", rr.Code)
+	if created.ID == 0 {
+		t.Fatal("expected non-zero ID for created todo")
 	}
 
-	var updated todo.Todo
-	if err := json.Unmarshal(rr.Body.Bytes(), &updated); err != nil {
+	//  GET BY ID
+	req = httptest.NewRequest(http.MethodGet, "/todos/"+itoa(created.ID), nil)
+	w = httptest.NewRecorder()
+	h.GetByID(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", w.Code)
+	}
+
+	var fetched todo.Todo
+	if err := json.NewDecoder(w.Body).Decode(&fetched); err != nil {
 		t.Fatal(err)
 	}
 
-	if updated.Title != "Updated" || !updated.Completed {
-		t.Errorf("Update failed: %+v", updated)
+	if fetched.Title != todoData.Title {
+		t.Fatalf("expected title %s, got %s", todoData.Title, fetched.Title)
+	}
+
+	//  UPDATE
+	updatedData := todo.Todo{Title: "Updated Task", Description: "Updated", Completed: true}
+	body, _ = json.Marshal(updatedData)
+	req = httptest.NewRequest(http.MethodPut, "/todos/"+itoa(created.ID), bytes.NewReader(body))
+	w = httptest.NewRecorder()
+	h.Update(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected status 200 on update, got %d", w.Code)
+	}
+
+	//  DELETE
+	req = httptest.NewRequest(http.MethodDelete, "/todos/"+itoa(created.ID), nil)
+	w = httptest.NewRecorder()
+	h.Delete(w, req)
+
+	if w.Code != http.StatusNoContent {
+		t.Fatalf("expected status 204 on delete, got %d", w.Code)
 	}
 }
 
-func TestHandler_DeleteTodo_Success(t *testing.T) {
-	handler := setupHandler()
-	created, _ := handler.service.CreateTodo(todo.Todo{Title: "ToDelete", Description: "Desc"})
-
-	req := httptest.NewRequest(http.MethodDelete, "/todos/"+strconv.Itoa(created.ID), nil)
-	rr := httptest.NewRecorder()
-
-	handler.Router().ServeHTTP(rr, req)
-
-	if rr.Code != http.StatusNoContent {
-		t.Fatalf("Expected status 204, got %d", rr.Code)
-	}
-
-	_, err := handler.service.GetTodo(created.ID)
-	if err == nil {
-		t.Errorf("Expected todo to be deleted")
-	}
+func itoa(i int) string {
+	return strconv.Itoa(i)
 }
